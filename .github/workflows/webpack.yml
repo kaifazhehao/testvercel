@@ -29,7 +29,7 @@ jobs:
 
       # 步骤 4：打包 Angular 项目（生产环境）
       - name: Build Angular Project (Production)
-        run: ng build --configuration production
+        run: npx ng build --configuration production
 
       # 步骤 5：保存打包产物（dist 目录），作为工作流的构建产物，可后续用于部署
       - name: Upload Build Artifact (dist)
