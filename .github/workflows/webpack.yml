@@ -38,7 +38,7 @@ jobs:
         with:
           # 【修改处 2】：指定打包产物目录（Angular 打包后，产物在 dist/[项目名] 下）
           # 替换 [your-angular-project-name] 为你的 Angular 项目名（可在 angular.json 中查看 "name" 字段）
-          publish_dir: ./dist/[H]
+          publish_dir: ./dist/[h]
           # 自动使用 GitHub 内置 Token 进行授权，无需手动配置密钥
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # 部署后强制覆盖旧版本，确保最新打包产物生效
