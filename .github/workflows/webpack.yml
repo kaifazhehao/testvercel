@@ -1,39 +1,45 @@
 # 工作流名称，可自定义
-name: Angular Project Auto Build
-# 触发条件：当推送到 main 分支时，执行该工作流（可修改分支名，如 master）
+name: Angular Auto Build & Deploy to GitHub Pages
+
+# 触发条件：推送到 main 分支时执行（可修改为 master 分支，根据你的仓库分支名调整）
 on:
   push:
     branches: [ main ]
 
-# 定义工作任务
+# 定义工作任务，包含「打包」和「部署」两个核心步骤
 jobs:
-  build:
-    # 运行环境：使用最新版 Ubuntu 服务器
+  build-and-deploy:
+    # 运行环境：最新版 Ubuntu 服务器
     runs-on: ubuntu-latest
-    # 任务步骤
     steps:
-      # 步骤 1：拉取 GitHub 仓库中的代码到运行环境
+      # 步骤 1：拉取 GitHub 仓库代码到云端环境
       - name: Checkout Repository Code
         uses: actions/checkout@v4
 
-      # 步骤 2：配置 Node.js 环境（Angular 依赖 Node.js，需指定对应版本，建议与本地一致）
+      # 步骤 2：配置 Node.js 环境（与 Angular 项目兼容，建议 18+ 版本）
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # 可修改为你的项目兼容的 Node.js 版本（如 18）
+          node-version: '20'
           cache: 'npm' # 缓存 npm 依赖，加快后续构建速度
 
-      # 步骤 3：安装项目依赖（npm install）
+      # 步骤 3：安装项目依赖
       - name: Install Project Dependencies
         run: npm install
 
-      # 步骤 4：打包 Angular 项目（生产环境）
+      # 步骤 4：打包 Angular 项目（生产环境 + 配置 GitHub Pages 基础路径）
+      # 【修改处 1】：替换 /angular-demo/ 为你的仓库名，格式：/[你的仓库名]/
       - name: Build Angular Project (Production)
-        run: npx ng build --configuration production
+        run: npx ng build --configuration production --base-href "/testvercel/"
 
-      # 步骤 5：保存打包产物（dist 目录），作为工作流的构建产物，可后续用于部署
-      - name: Upload Build Artifact (dist)
-        uses: actions/upload-artifact@v4
+      # 步骤 5：部署打包产物到 GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4 # 成熟的 GitHub Pages 部署插件
         with:
-          name: angular-dist-files # 构建产物名称，可自定义
-          path: dist/ # 打包产物所在目录，对应 Angular 打包输出目录
+          # 【修改处 2】：指定打包产物目录（Angular 打包后，产物在 dist/[项目名] 下）
+          # 替换 [your-angular-project-name] 为你的 Angular 项目名（可在 angular.json 中查看 "name" 字段）
+          publish_dir: ./dist/[H]
+          # 自动使用 GitHub 内置 Token 进行授权，无需手动配置密钥
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # 部署后强制覆盖旧版本，确保最新打包产物生效
+          force_orphan: true
