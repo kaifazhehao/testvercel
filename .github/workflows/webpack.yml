@@ -1,28 +1,39 @@
-name: NodeJS with Webpack
-
+# 工作流名称，可自定义
+name: Angular Project Auto Build
+# 触发条件：当推送到 main 分支时，执行该工作流（可修改分支名，如 master）
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
+# 定义工作任务
 jobs:
   build:
+    # 运行环境：使用最新版 Ubuntu 服务器
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-
+    # 任务步骤
     steps:
-    - uses: actions/checkout@v4
+      # 步骤 1：拉取 GitHub 仓库中的代码到运行环境
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
+      # 步骤 2：配置 Node.js 环境（Angular 依赖 Node.js，需指定对应版本，建议与本地一致）
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 可修改为你的项目兼容的 Node.js 版本（如 18）
+          cache: 'npm' # 缓存 npm 依赖，加快后续构建速度
 
-    - name: Build
-      run: |
-        npm install
-        npx webpack
+      # 步骤 3：安装项目依赖（npm install）
+      - name: Install Project Dependencies
+        run: npm install
+
+      # 步骤 4：打包 Angular 项目（生产环境）
+      - name: Build Angular Project (Production)
+        run: ng build --configuration production
+
+      # 步骤 5：保存打包产物（dist 目录），作为工作流的构建产物，可后续用于部署
+      - name: Upload Build Artifact (dist)
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-dist-files # 构建产物名称，可自定义
+          path: dist/ # 打包产物所在目录，对应 Angular 打包输出目录
